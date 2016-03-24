@@ -7,7 +7,7 @@
  * @license http://www.php.net/license/3_01.txt PHP License 3.01
  */
 
-function strip_html_tags ($str, $tags, $strip_content=false) {
+function strip_html_tags($str, $tags, $strip_content=false) {
 	$content = '';
 	if (!is_array($tags)) {
 		$tags = (strpos($str, '>') !== false ? explode('>', str_replace('<', '', $tags)) : array($tags));
