@@ -44,15 +44,16 @@ class pgsql {
 						$p++;
 					}
 					return $back;
-				} else return false;
-			} else return false;
-		} else return false;
+				}
+			}
+		}
+		return false;
 	}
 
 	public function get_row($sql, $params=array()){
 		$data = $this->get($sql, $params);
 		if ($data) return $data[0];
-		else return false;
+		return false;
 	}
 
 	public function get_val($sql, $params=array()){
@@ -69,9 +70,9 @@ class pgsql {
 			$result = pg_execute($this->id, "", $params);
 			if ($result) {
 				if (pg_affected_rows($result)) return true;
-				else return false;
-			} else return false;
-		} else return false;
+			}
+		}
+		return false;
 	}
 
 	private function _prepare_params($q, $params) {
