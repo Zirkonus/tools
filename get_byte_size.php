@@ -6,7 +6,6 @@
  * @copyright 2010
  * @license http://www.php.net/license/3_01.txt PHP License 3.01
  */
-
 function get_byte_size($size) {
 	if ($size < 1024) {
 		return intval($size) .' B';
