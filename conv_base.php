@@ -6,7 +6,6 @@
  * @copyright 2011
  * @license http://www.php.net/license/3_01.txt PHP License 3.01
  */
-
 function conv_base($number_input, $from_base_input, $to_base_input) {
 	if ($from_base_input == $to_base_input) return $number_input;
 	$from_base  = str_split($from_base_input, 1);
