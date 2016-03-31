@@ -1,15 +1,16 @@
 <?php
 /**
- * It's required to replace white and nearly white backgrounds with transparent ones and remove the empty space.
+ * It's required to replace white and nearly white backgrounds with transparent ones and  remove the empty space.
  *
  * @author Oleksii Dovzhenko <zirkonus@gmail.com>
  * @copyright 2016
  * @license http://www.php.net/license/3_01.txt PHP License 3.01
  */
 class makeTransparentImage {
-
 	private $tmp_dir 		= "./tmp/";
 	private $percent_rate 	= 270;
+	private $max_val 		= 1000;
+	private $min_val 		= 0;
 	private $rotate			= -90;
 	private $red			= 240;
 	private $green			= 240;
@@ -31,7 +32,7 @@ class makeTransparentImage {
 		$src = imagerotate($src, $this->rotate, 0);
 		$width = imagesx($src);
 		$height = imagesy($src);
-		$percent = ($this->percent_rate * 4) / $width;
+		$percent = ($this->percent_rate * 2) / $width;
 		$newWidth = $width * $percent;
 		$newHeight = $height * $percent;
 		$im = imagecreatetruecolor($newWidth, $newHeight);
@@ -45,10 +46,10 @@ class makeTransparentImage {
 		// find non-white pixels on $im and copy them to $dst
 		$sizeX = $newWidth;
 		$sizeY = $newHeight;
-		$startX = $startY = 100000;
-		$finishX = $finishY = 0;
-		for ($x=0; $x<$sizeX; $x++) {
-			for ($y=0; $y<$sizeY; $y++) {
+		$startX = $startY = $this->max_val;
+		$finishX = $finishY = $this->min_val;
+		for ($x=0; $x<$sizeX-1; $x++) {
+			for ($y=0; $y<$sizeY-1; $y++) {
 				$rgb = imagecolorat($im, $x, $y);
 				$colors = imagecolorsforindex($im, $rgb);
 				$r = $colors['red'];
