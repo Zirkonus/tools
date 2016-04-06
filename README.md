@@ -6,6 +6,8 @@
 
 <b>conv_base.php</b><br> A method of number conversion between random scales of notation.
 
+<b>generate_random_string.php</b><br> Generate random string.
+
 <b>get_byte_size.php</b><br> Byte info displaying in an easy-to-read form.
 
 <b>make_transparent_image.php</b><br> It's required to replace white and nearly white backgrounds with transparent ones and  remove the empty space.
