@@ -14,9 +14,9 @@ function generateRandomString($length = 10, $type = 'number char', $return_md5 =
 		$types = array_flip($types);
 	}
 	$characters_types = array (
-		'number'	=> '0123456789',
-		'char'		=> 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-		'special'	=> '`~!@#$%^&*()_-+={}[]\|:;"'."'".'<>,.? /'
+		'number'  => '0123456789',
+		'char'    => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+		'special' => '`~!@#$%^&*()_-+={}[]\|:;"'."'".'<>,.? /'
 	);
 	
 	if (isset($types['all'])) {
