@@ -1,61 +1,79 @@
 <?php
 /**
- * It's required to replace white and nearly white backgrounds with transparent ones and  remove the empty space.
+ * It's required to replace white and nearly white backgrounds with transparent ones and remove the empty space.
+ *
+ * Code for testing class:
+ * <?php
+ * require_once "make_transparent_image.php";
+ * 
+ * try {
+ *   $m = new makeTransparentImage();
+ *
+ *   $m->setColor('red', 240, 255);
+ *   $m->setColor('green', 240, 255);
+ *   $m->setColor('blue', 240, 255);
+ *
+ *   header('Content-type: image/png');
+ *   echo $m->make(__DIR__."/image.jpg");
+ * } catch (Exception $e) {
+ *   echo $e->getMessage();
+ * }
+ * ?>
  *
  * @author Oleksii Dovzhenko <zirkonus@gmail.com>
  * @copyright 2016
  * @license http://www.php.net/license/3_01.txt PHP License 3.01
  */
 class makeTransparentImage {
-	private $tmp_dir 		= "./tmp/";
-	private $percent_rate 	= 270;
-	private $max_val 		= 1000;
-	private $min_val 		= 0;
-	private $rotate			= -90;
-	private $red			= 240;
-	private $green			= 240;
-	private $blue			= 240;
+	private $start_red   = 240;
+	private $end_red     = 255;
+	private $start_green = 240;
+	private $end_green   = 255;
+	private $start_blue  = 240;
+	private $end_blue    = 255;
 	
-	public function make($data, $isFileString=FALSE) {
-		if ($isFileString) {
-			$src = imagecreatefromstring($data);
-		} else {
-			$src = imagecreatefromjpeg($data);
+	public function setColor($color, $start=0, $end=0) {
+		if (!in_array($color, array('red','green','blue'))) {
+			throw new InvalidArgumentException('Invalid color name');
 		}
-		$tmp_file = $this->tmp_dir . md5(time() . mt_rand());
-		imagepng($src, $tmp_file);
-		imagedestroy($src);
+		if ($start > $end) list($start, $end) = array($end, $start);
+		if ($start < 0) $start = 0;
+		if ($end > 255) $end = 255;
+		$this->{'start_'.$color} = $start;
+		$this->{'end_'.$color} = $end;
+	}
+
+	public function make($image) {
+		switch (exif_imagetype($image)) {
+			case IMAGETYPE_GIF:
+				$src = imagecreatefromgif($image);
+				break;
+			case IMAGETYPE_JPEG:
+				$src = imagecreatefromjpeg($image);
+				break;
+			case IMAGETYPE_PNG:
+				$src = imagecreatefrompng($image);
+				break;
+			default:
+				throw new InvalidArgumentException('Invalid image type');
+		}
 		
-		// rotate, pre-resize and resamle the source image
-		$src = imagecreatefrompng($tmp_file);
-		unlink($tmp_file);
-		$src = imagerotate($src, $this->rotate, 0);
-		$width = imagesx($src);
-		$height = imagesy($src);
-		$percent = ($this->percent_rate * 2) / $width;
-		$newWidth = $width * $percent;
-		$newHeight = $height * $percent;
-		$im = imagecreatetruecolor($newWidth, $newHeight);
-		imagecopyresampled($im, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-		
-		// create a transparent image with a size like $im image
-		$dst = imagecreatetruecolor($newWidth, $newHeight);
+		$startX = $sizeX = imagesx($src);
+		$startY = $sizeY = imagesy($src);
+		$dst = imagecreatetruecolor($sizeX, $sizeY);
 		imagesavealpha($dst, TRUE);
 		imagefill($dst, 0, 0, imagecolorallocatealpha($dst, 0, 0, 0, 127));
 		
-		// find non-white pixels on $im and copy them to $dst
-		$sizeX = $newWidth;
-		$sizeY = $newHeight;
-		$startX = $startY = $this->max_val;
-		$finishX = $finishY = $this->min_val;
+		// find non-white pixels on $src and copy them to $dst
+		$finishX = $finishY = 0;
 		for ($x=0; $x<$sizeX-1; $x++) {
 			for ($y=0; $y<$sizeY-1; $y++) {
-				$rgb = imagecolorat($im, $x, $y);
-				$colors = imagecolorsforindex($im, $rgb);
+				$rgb = imagecolorat($src, $x, $y);
+				$colors = imagecolorsforindex($src, $rgb);
 				$r = $colors['red'];
 				$g = $colors['green'];
 				$b = $colors['blue'];
-				if ($r < $this->red && $g < $this->green && $b < $this->blue) {
+				if (($r < $this->start_red || $r > $this->end_red) && ($g < $this->start_green || $g > $this->end_green) && ($b < $this->start_blue || $b > $this->end_blue)) {
 					imagesetpixel($dst, $x, $y, $rgb);
 					if ($startX >= $x) $startX = $x;
 					if ($startY >= $y) $startY = $y;
@@ -65,13 +83,12 @@ class makeTransparentImage {
 			}
 		}
 		
-		// final resize
+		// final resize - remove empty space round the image
 		$width = $newWidth - $startX + ($finishX - $newWidth);
 		$height = $newHeight - $startY + ($finishY - $newHeight);
-		$percent = $this->percent_rate / $width;
-		$newWidth = $width * $percent;
-		$newHeight = $height * $percent;
-		$ret = imagecreatetruecolor($newWidth, $newHeight);
+		$newWidth = $finishX - $startX;
+		$newHeight = $finishY - $startY;
+		$ret = imagecreatetruecolor($width, $height);
 		imagesavealpha($ret, TRUE);
 		imagefill($ret, 0, 0, imagecolorallocatealpha($ret, 0, 0, 0, 127));
 		imagecopyresampled($ret, $dst, 0, 0, $startX, $startY, $newWidth, $newHeight, $width, $height);
